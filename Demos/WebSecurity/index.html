@@ -200,11 +200,11 @@
 
 				<section>
 					<h3>XSS类型-存储型XSS</h3>
-					<p class="fragment">存储型CSS和反射型XSS的差别在于：提交的XSS代码会存储在服务端（不管是数据库、内存还是文件系统中），
+					<p class="fragment">存储型XSS和反射型XSS的差别在于：提交的XSS代码会存储在服务端（不管是数据库、内存还是文件系统中），
 					下次请求目标页面时不用再提交XSS代码。
 					</p>
 					<p class="fragment" style="color:yellow; font-size:25px; text-align:left;">
-					最典型的例子是留言板XSS,用户提交一条包含CSS代码的留言存储到数据库，目标用户看到留言板时，那些留言的内容会
+					最典型的例子是留言板XSS,用户提交一条包含XSS代码的留言存储到数据库，目标用户看到留言板时，那些留言的内容会
 					从数据库查询出来并显示，浏览器发现有XSS代码就当做正常的HTML与JS解析执行，于是就触发了XSS攻击。
 					</p>	
 				</section>
@@ -256,7 +256,7 @@
 				<section>
 					<h3>XSS防御</h3>
 					<p class="fragment">
-						安装三方的应用防火墙，可以拦截css攻击等......
+						安装三方的应用防火墙，可以拦截XSS攻击等......
 					</p>
 				</section>
 
