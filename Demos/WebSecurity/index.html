@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>Web 开发常见的几个漏洞和解决方法</title>
+
+		<meta name="description" content="A framework for easily creating beautiful presentations using HTML">
+		<meta name="author" content="Hakim El Hattab">
+
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/black.css" id="theme">
+
+		<!-- Code syntax highlighting -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+		<style type="text/css">
+			section p{
+				color:#FF8C00;
+			}
+		</style>
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+				<section>
+					<!-- <h1>Reveal.js</h1> -->
+					<h3>Web 开发中常见的几个漏洞和解决方法</h3>
+					<p>
+						<small>Created by <a href="http://xiaodongaini.github.io">刘晓东</a> </small>
+					</p>
+				</section>
+
+				
+
+				<section>
+					<h2>讲述内容</h2>
+					<p class="fragment">sql注入漏洞和防护</p>
+					<p class="fragment">跨站脚本攻击（XSS）和防护</p>
+					<p class="fragment">Web开发中的其他漏洞</p>
+				</section>
+
+				<section>
+					<h3>sql注入漏洞和防护</h3>
+					<p class="fragment">程序员在编写代码的时候，没有对用户输入数据的合法性进行判断，使应用程序存在安全隐患。用户可以提交一段数据库查询代码，根据程序返回的结果，获得某些他想得知的数据，这就是所谓的SQL Injection，即SQL注入</p>
+					<p class="fragment">攻击者把SQL命令插入到Web表单的输入域或页面请求的查询字符串，
+						欺骗服务器执行恶意的SQL命令</p>
+				</section>
+
+				<section>
+					<h3>sql注入漏洞和防护</h3>
+					<p class="fragment"><a href="http://211.81.251.94/WEBTEST/Login.aspx" target="_blank">举个小栗子（sql注入）</a></p>
+					<p class="fragment" style="color:yellow; font-size:25px; text-align:left;">这个案例中userName和 password 是没有经过任何处理，直接拿前端传入的数据，这样拼接的SQL会存在注入漏洞。（帐户：admin  123456）</p>
+					<p class="fragment" style="color:yellow; font-size:25px; text-align:left;">合并的SQL为：
+    					SELECT COUNT(*) FROM Login WHERE UserName='admin'-- Password='123'
+						因为UserName值中输入了“--”注释符，后面语句被省略而登录成功。（常常的手法：前面加上'; ' (分号，用于结束前一条语句)，后边加上'--' (用于注释后边的语句)）
+					</p>
+				</section>
+
+				<section>
+					<h3>sql注入：常见的sql注入</h3>
+					<p class="fragment">
+						1.猜测数据库名，备份数据库<br/>
+					</p>
+					<p class="fragment" style="color:yellow; font-size:25px; text-align:left;">
+						&nbsp;&nbsp;&nbsp;&nbsp;a)猜测数据库名： and db_name() >0 <br/>
+						&nbsp;&nbsp;&nbsp;&nbsp;b)备份数据库：;backup database 数据库名 to disk = ‘c:\*.db’;--
+					</p>
+					<p class="fragment">
+						2.猜解字段名称<br/>
+					</p>
+					<p class="fragment" style="color:yellow; font-size:25px; text-align:left;">
+						&nbsp;&nbsp;&nbsp;&nbsp;a)猜测数据库名： 猜解法：and (select count(字段名) from 表名)>0   若“字段名”存在，则返回正常<br/>
+						&nbsp;&nbsp;&nbsp;&nbsp;b)读取法：and (select top 1 col_name(object_id('表名'),1) from sysobjects)>0   把col_name(object_id('表名'),1)中的1依次换成2,3,4,5，6…就可得到所有的字段名称。
+					</p>
+					
+				</section>
+
+				<section>
+					<h3>sql注入：常见的sql注入</h3>
+					<p class="fragment" style="text-align:left;">3.遍历系统的目录结构，分析结构并发现WEB虚拟目录<br/>
+					<p class="fragment" style="text-align:left;">4.查询当前用户的数据库权限<br/>
+					<p class="fragment" style="text-align:left;">5.设置新的数据库帐户（得到MSSQL管理员账户）<br/>
+					<p class="fragment" style="text-align:left;">6.客户端脚本攻击<br/>
+					<p class="fragment" style="text-align:left;">7.等......<br/>
+				</section>
+
+				<section>
+					<h3>sql注入预防方法</h3>
+					<p class="fragment">参数化查询</p>
+					<img class="fragment" style="width:70%;" src="images/param2.png">
+					<p class="fragment">实质：进行了参数过滤，将不符合sql语法的语句过滤出来，针对不同的sql语句执行不同的处理</p>	
+				</section>
+
+				<section>
+					<h3>使用存储过程</h3>
+					<p class="fragment" style="color:yellow; font-size:25px;">存储过程（Stored Procedure）是在大型数据库系统中，一组为了完成特定功能的SQL 语句集，经编译后存储在数据库中，用户通过指定存储过程的名字并给出参数（如果该存储过程带有参数）来执行它。</p>
+					<img class="fragment" style="width:90%;" src="images/storeProcess.png">
+					<img class="fragment" style="width:90%;" src="images/process2.png">
+				</section>
+
+				<section>
+					<h3>使用存储过程优缺点</h3>
+					<p class="fragment" style="color:yellow; font-size:25px; text-align:left;">优点：</p>
+					<p class="fragment" style="color:yellow; font-size:25px; text-align:left;">a)   安全性高，防止SQL注入并且可设定只有某些用户才能使用指定存储过程。<br/>
+					b)在创建时进行预编译，后续的调用不需再重新编译。<br/>
+					c)可以降低网络的通信量。存储过程方案中用传递存储过程名来代替SQL语句。</p>
+					<p class="fragment" style="color:yellow; font-size:25px; text-align:left;">缺点：</p>
+					<p class="fragment" style="color:yellow; font-size:25px; text-align:left;">a)   非应用程序内联代码，调式麻烦。<br/>
+					b)修改麻烦，因为要不断的切换开发工具。（不过也有好的一面，一些易变动的规则做到存储过程中，如变动就不需要重新编译应用程序）<br/>
+					c)如果在一个程序系统中大量的使用存储过程，到程序交付使用的时候随着用户需求的增加会导致数据结构的变化，接着就是系统的相关问题了，最后如果用户想维护该系统可以说是很难。</p>
+				</section>
+
+				<section>
+					<h3>其他防止sql注入方法</h3>
+					<p class="fragment">专业的SQL注入工具及防毒软件</p>
+					<p class="fragment">过滤禁止运行法等......</p>
+						
+				</section>
+
+				<section>
+					<h3>跨站脚本攻击（XSS）</h3>
+					<p class="fragment" style="color:yellow; font-size:25px; text-align:left;">XSS即跨站脚本，发生在目标网站中目标用户的浏览器层面上，当用户浏览器渲染整个HTML文档的过程中，
+						出现了不被预期的脚本指令并执行时，XSS就会发生。</p>
+					<p class="fragment">关键点：</p>
+					<p class="fragment" style="color:yellow; font-size:25px; text-align:left;">
+					（1）目标网站的目标用户：这里强调了场景。<br>
+					（2）浏览器：因为这类攻击是由浏览器来解析执行的。浏览器当然不会看到什么就解析什么，它们会严格执行共同约定
+						的同源策略，不符合规定的就不会执行。<br>
+					（3）不被预期的：攻击者在输入时提交了可控的脚本内容，然后在输出后被浏览器解析执行了。
+					</p>
+						
+				</section>
+
+				<section>
+					<h3>跨站脚本攻击（XSS）</h3>
+					<p class="fragment" style="color:yellow; font-size:20px; text-align:left;">
+						<a href="http://211.81.251.94/WEBTEST/XSite.aspx" target="_blank">举个小栗子（XSS攻击）</a><br/>
+						#alert(document.cookie)<br/>
+						#alert(document.cookie)<br/>
+						&lt;/div&gt;&lt;script type=&quot;text/javascript&quot;&gt;alert(&#39;跨站攻击了&#39;)&lt;/script&gt;&lt;div&gt;
+					</p>
+					<p class="fragment" style="color:yellow; font-size:25px; text-align:left;">
+						真实的攻击中，我们需要替换这样简单的脚本为真正有杀伤力的脚本内容，这就是漏洞利用过程中需要仔细考虑的
+						事。
+					</p>
+					<p class="fragment" style="color:yellow; font-size:25px; text-align:left;">
+						我们可以将更多的XSS利用代码放在JS脚本文件中，都准备充足后，将这个链接发给目标用户，并欺骗其点击，目标用户的浏览器就会开始执行我们构造的恶意脚本。
+					</p>
+					<p class="fragment" style="color:yellow; font-size:25px; text-align:left;">
+						攻击发生后，目标用户的Cookie信息就会被盗取，然后攻击者就可以利用该Cookie控制目标用户的账号权限。
+					</p>
+					<p class="fragment" style="color:yellow; font-size:25px; text-align:left;">
+						这只是一个例子，真实情况不会这么顺利。比如浏览器的 XSS Filter 防御可能会导致这样的利用无法成功。
+						盗取来的Cookie并不一定可以控制目标用户的账号权限，等等。
+						<br>
+						所以，XSS的整个过程中，从漏洞挖掘到漏洞利用，再到进一步利用，各环节都需要看场景，场景通常包括网站对象，
+						浏览器对象，攻击用户对象等。
+					</p>
+					<p class="fragment" style="color:yellow; font-size:25px; text-align:left;">
+						总之，我们可以通俗地总结XSS为：想尽一切办法将你的脚本内容在目标网站中目标用户的浏览器上解析执行即可。
+					</p>
+				</section>
+
+				<section>
+					<h3>XSS类型</h3>
+					<p class="fragment">反射型XSS(也叫非持久型XSS)</p>
+					<p class="fragment">存储型XSS(也叫持久型XSS)</p>
+					<p class="fragment">DOMXSS</p>
+						
+				</section>
+
+				<section>
+					<h3>XSS类型-反射型XSS</h3>
+					<p class="fragment">发出请求时，XSS代码出现在URL中，作为输入提交到服务端，服务端解析后响应，在响应内容中出现这段XSS代码，
+						最后浏览器解析执行。这个过程像是一次反射，故称为反射型XSS。</p>	
+				</section>
+
+				<section>
+					<h3>XSS类型-存储型XSS</h3>
+					<p class="fragment">存储型CSS和反射型XSS的差别在于：提交的XSS代码会存储在服务端（不管是数据库、内存还是文件系统中），
+					下次请求目标页面时不用再提交XSS代码。
+					</p>
+					<p class="fragment" style="color:yellow; font-size:25px; text-align:left;">
+					最典型的例子是留言板XSS,用户提交一条包含CSS代码的留言存储到数据库，目标用户看到留言板时，那些留言的内容会
+					从数据库查询出来并显示，浏览器发现有XSS代码就当做正常的HTML与JS解析执行，于是就触发了XSS攻击。
+					</p>	
+				</section>
+
+				<section>
+					<h3>XSS类型-DOM XSS</h3>
+					<p class="fragment">例子中说的就是DOM XSS,它和反射型XSS、存储型XSS、的差别在于，DOM XSS的XSS代码并不需要服务器解析响应的直接参与，触发XSS靠的就是浏览器端的DOM解析，可以认为完全是客户端的事情。</p>	
+				</section>
+				
+				<section>
+						<h3>XSS危害</h3>
+						<p class="fragment" style="color:yellow; font-size:25px;">挂马</p>
+						<p class="fragment" style="color:yellow; font-size:25px;">盗取用户Cookie</p>
+						<p class="fragment" style="color:yellow; font-size:25px;">DoS（拒绝服务）客户端浏览器</p>
+						<p class="fragment" style="color:yellow; font-size:25px;">钓鱼攻击，高级钓鱼技巧</p>
+						<p class="fragment" style="color:yellow; font-size:25px;">编写针对性的XSS病毒，删除目标文章、恶意篡改数据、</p>
+						<p class="fragment" style="color:yellow; font-size:25px;">劫持用户Web行为，甚至进一步渗透内网</p>
+						<p class="fragment" style="color:yellow; font-size:25px;">等......</p>
+				</section>
+
+				<section>
+					<h3>XSS防御</h3>
+					<p class="fragment">
+						完善过滤体系
+					</p>
+					<p class="fragment" style="color:yellow; font-size:25px; text-align:left;">
+						 永远不相信用户的输入。需要对用户的输入进行处理，只允许输入合法的值，其它值一概过滤掉。
+					</p>
+					
+				</section>
+
+				<section>
+					<h3>XSS防御</h3>
+					<p class="fragment">
+						HTML encode
+					</p>
+					<p class="fragment" style="color:yellow; font-size:25px; text-align:left;">
+						某些情况下，我们不能对用户数据进行严格的过滤，那我们也需要对标签进行转换。
+					</p>
+					<img class="fragment" style="width:60%;" src="images/guolv.png">
+					<p class="fragment" style="color:yellow; font-size:25px; text-align:left;">
+						例子中的代码：
+						&lt;/div&gt;&lt;script type=&quot;text/javascript&quot;&gt;alert(&#39;跨站攻击了&#39;)&lt;/script&gt;&lt;div&gt;
+						经过转换后：
+					</p>
+					<img class="fragment" style="width:90%;" src="images/guolvtran.png">
+				</section>
+
+				<section>
+					<h3>XSS防御</h3>
+					<p class="fragment">
+						安装三方的应用防火墙，可以拦截css攻击等......
+					</p>
+				</section>
+
+				<section>
+					<h3>其他Web安全漏洞</h3>
+					<p class="fragment">
+						CSRF(跨站请求伪造)
+					</p>
+					<p class="fragment">
+						界面操作劫持等
+					</p>
+					
+				</section>
+				<section>
+					<h3>谢谢观看</h3>
+					
+					
+				</section>
+
+				<!-- Example of nested vertical slides -->
+
+			</div>
+
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+
+			// Full list of configuration options available at:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: true,
+				center: true,
+
+				transition: 'slide', // none/fade/slide/convex/concave/zoom
+
+				// Optional reveal.js plugins
+				dependencies: [
+					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: 'plugin/zoom-js/zoom.js', async: true },
+					{ src: 'plugin/notes/notes.js', async: true }
+				]
+			});
+
+		</script>
+
+	</body>
+</html>
